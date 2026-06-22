@@ -692,6 +692,26 @@
           const doc = new DOMParser().parseFromString(text, 'image/svg+xml');
           svgEl = doc.documentElement;
           scene.appendChild(svgEl);
+
+          // SVG <a> elements don't navigate reliably on mobile Safari,
+          // so handle clicks explicitly
+          var dragThreshold = 5;
+          var startX, startY;
+          svgEl.addEventListener('pointerdown', function (e) {
+            startX = e.clientX;
+            startY = e.clientY;
+          });
+          svgEl.addEventListener('pointerup', function (e) {
+            var dx = Math.abs(e.clientX - startX);
+            var dy = Math.abs(e.clientY - startY);
+            if (dx > dragThreshold || dy > dragThreshold) return;
+            var link = e.target.closest('a');
+            if (link) {
+              var href = link.getAttribute('href') || link.getAttributeNS('http://www.w3.org/1999/xlink', 'href');
+              if (href) window.open(href, '_blank');
+            }
+          });
+
           setTimeout(initPanzoom, 50);
         })
         .catch(function () {
