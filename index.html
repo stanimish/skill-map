@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Карта навыков для авторов</title>
+  <style>
+    @font-face {
+      font-family: "TTTravelsNext";
+      src: url("src/TTTravelsNextTrl-Bd.ttf") format("truetype");
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #9356FF;
+      font-family: 'Inter';
+      
+    }
+
+    button, input {
+      font-family: 'Inter';
+      appearance: none;
+      border: none;
+    }
+
+    #scene {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      cursor: grab;
+    }
+
+    #scene:active {
+      cursor: grabbing;
+    }
+
+    /* ── Controls overlay ────────────────────────────────────────────── */
+    #controls {
+      position: fixed;
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 100;
+      bottom: 50%;
+      transform: translate(0, 50%);
+    }
+
+    #controls button {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 44px;
+      height: 44px;
+      border: none;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
+      font-size: 22px;
+      line-height: 1;
+      cursor: pointer;
+      backdrop-filter: blur(6px);
+      transition: background 0.15s;
+    }
+
+    #controls button:hover {
+      background: rgba(255, 255, 255, 0.30);
+    }
+
+    #controls img {
+      display: block;
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* ── Loading spinner ─────────────────────────────────────────────── */
+    #loading {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 1;
+      transition: opacity 0.4s;
+    }
+
+    #loading.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .loading-icon-wrap {
+      background: #000;
+      width: 96px;
+      height: 96px;
+      border-radius: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .loading-icon {
+      width: 64px;
+      height: 64px;
+      position: relative;
+    }
+
+    .loading-icon svg {
+      animation: spin 6s linear infinite;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .header {
+      /* header */
+      box-sizing: border-box;
+
+      position: fixed;
+      height: 78px;
+      left: 0;
+      top: 0;
+      width: 100%;
+      z-index: 10;
+
+      background: #000000;
+      border-bottom: 1px solid #19191A;
+      border-bottom-left-radius: 17px;
+      border-bottom-right-radius: 17px;
+    }
+
+    .header-layout {
+      /* Auto layout */
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 20px;
+      width: 100%;
+    }
+
+    @media (max-width: 767px) {
+      .header {
+        height: auto;
+      }
+      .header-layout {
+        padding: 10px 12px;
+      }
+    }
+
+    .header-logos-wrap {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-right: .75rem;
+      color: #fff;
+    }
+
+    .header-logos-wrap img {
+      display: block;
+      margin: 0;
+    }
+
+    .header-button {
+      font-family: "TTTravelsNext";
+      font-size: 14px;
+      line-height: 20px;
+      color: #fff;
+      /* background-image: linear-gradient(0deg, #9a5cff .37%, #7d2eff 2.45%, #6f17ff 4.93%, #ae57ff 99.54%); */
+      text-decoration: none;
+      padding: 0 .75rem;
+      border-radius: 12px;
+      height: 40px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      appearance: none;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      text-transform: lowercase;
+      background: #6B00FF;
+      transition: background .2s ease-in-out;
+    }
+
+    .header-button:hover {
+      background: #6a00ffe2;
+    }
+
+    .header-button-inner {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .header-button-icon {
+        width: 16px;
+        height: 16px;
+        position: relative;
+    }
+
+    .header-button-icon svg {
+      display: block;
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .footer-wrap {
+      position: fixed;
+      left: 20px;
+      bottom: 20px;
+      z-index: 10;
+
+      display: flex;
+      flex-flow: column;
+      justify-content: end;
+      align-items: start;
+      flex-flow: column-reverse;
+      gap: 12px;
+    }
+
+    .footer {
+      position: relative;
+      width: 270px;
+      max-width: 270px;
+      border-radius: 24px;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      background: #000;
+      height: auto;
+      pointer-events: none;
+      transform: translateY(10px);
+      opacity: 0;
+      transition: transform .15s ease-in-out, opacity .15s ease-in-out;
+      display: none;
+    }
+
+    .footer-wrap:hover .footer {
+      display: block;
+      pointer-events: auto;
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .footer-toggle {
+      appearance: none;
+      border-radius: 100vw;
+      height: 72px;
+      width: 72px;
+      background: #111111;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 14px;
+      font-weight: 500;
+      box-shadow: inset 0 0 0 1px #19191A;
+    }
+
+    .footer-layout {
+      display: flex;
+      flex-flow: column;
+      align-items: start;
+      justify-content: start;
+      gap: 12px;
+      padding: 24px 16px;
+      width: 100%;
+      max-width: 1020px;
+      margin: auto;
+      width: 100%;
+    }
+
+    .footer-link {
+      color: #747478;
+      flex: 1 1 20%;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 400;
+      letter-spacing: .01em;
+      transition: .2s all ease-in-out;
+    }
+
+     .footer-link:not(.footer-link-partners):hover {
+      color: #fff;
+     }
+
+     .footer-link-partners {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: start;
+     }
+
+     .footer-link-partners a {
+      display: block;
+      width: 18px;
+      height: 18px;
+      position: relative;
+      border-radius: 100vw;
+      transition: filter .2s ease-in-out;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+     }
+
+     .footer-link-partners a:hover {
+        filter: drop-shadow(0px 0px 2.5px rgba(255, 255, 255, 0.5));
+      }
+
+     .partner-logo {
+      display: block;
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+     }
+
+    @media (max-width: 767px) {
+      .footer {
+        height: auto;
+      } 
+      .footer-layout {
+        align-items: start;
+        height: auto;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto;
+        padding: 20px 17px;
+      }
+
+      .footer-link {
+        text-align: left;
+      }
+
+      .footer-link:first-child {
+          grid-column: 1;
+          grid-row: 2;
+      }
+
+      .footer-link:nth-child(2) {
+          grid-column: 2;
+          grid-row: 2;
+      }
+    }
+
+    #cookie-banner {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      width: 365px;
+      background: #202020;
+      padding: 15px 0 15px 37px;
+      border-radius: 100vw;
+      display: flex;
+      gap: 22px;
+    }
+
+    .cookie-text {
+      font-size: 14px;
+      line-height: 1;
+      font-weight: 500;
+      color: #fff;
+      width: 234px;
+    }
+
+    #cookie-accept {
+      appearance: none;
+      color: #fff;
+      width: 72px;
+      height: 72px;
+      border-radius: 100vw;
+      font-size: 14px;
+      font-weight: 500;
+
+      position: absolute;
+      right: 0;
+      top: 0;
+      border: none;
+      background: #111111;
+      box-shadow: inset 0 0 0 1px #19191A;
+      cursor: pointer;
+    }
+
+    .cookie-text a {
+      color: #8C45FF;
+      text-decoration: none;
+    }
+
+    .cookie-text a:hover {
+      text-decoration: underline;
+    }
+
+    .hint {
+      display: flex;
+      gap: 16px;
+      justify-content: start;
+      align-items: center;
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      background: #FFFFFF;
+      border-radius: 100vw;
+      width: 100%;
+      max-width: 342px;
+      box-shadow: inset 0 0 0 1px #F0F0F0;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+      z-index: 200;
+    }
+
+    .hint-icon {
+      width: 61px;
+      height: 61px;
+      border: 1px solid #F0F0F0;
+      background: #6B00FF;
+      border-radius: 100vw;
+      position: relative;
+      flex: 0 0 auto;
+    }
+
+    .hint-icon img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      position: absolute;
+    }
+
+    .hint-text {
+      color: #000;
+      font-size: 14px;
+      font-weight: 500;
+      max-width: 230px;
+    }
+
+    .map-rect, .map-circle {
+      transition: fill-opacity .15s ease-in-out, fill .15s ease-in-out;
+    }
+
+    a.level_0:hover .map-rect {
+      fill-opacity: .3;
+    }
+
+    a.level_1:hover .map-rect {
+      fill-opacity: .5;
+    }
+
+    a.level_2:hover .map-rect {
+      fill: #7130E6;
+    }
+
+    a.level_3:hover .map-rect {
+      fill: #4000C6;
+    }
+
+    a.level_0:hover .map-circle {
+      fill-opacity: .8;
+    }
+
+    a.level_1:hover .map-circle {
+      fill-opacity: 1;
+    }
+
+    a.level_2:hover .map-circle {
+      fill-opacity: .8;
+    }
+
+    a.level_3:hover .map-circle {
+      fill-opacity: .8;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-layout">
+      <div href="https://setka.ru/" class="header-logos-wrap" >
+        <a class="setka-logo" href="" target="_blank" aria-label="Главная страница Сетки"><img src="src/setka-logo-white.svg" alt="setka"></a>
+        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="currentColor" viewBox="0 0 10 10">
+          <path fill="#fff" d="m8.7 2.4-3 2.9 3 2.8L8 9l-3-3-2.8 3-.7-.8 2.9-2.8-3-3 .8-.7 2.9 3 2.9-3 .7.8Z"/>
+        </svg>
+        <a class="setka-authors-logo" target="_blank" href="https://setka.ru/communities/018ea339-c4e8-4f86-b509-f4cc97fd4897"><img src="src/setka-x-logo.svg" alt=""></a>
+      </div>
+      <a target="_blank" href="https://setka.ru/login" class="header-button">
+        <span class="header-button-inner">Войти
+          <span class="header-button-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+              <path fill="currentColor" d="m13.4 6.7-6.7 6.7L5.3 12l4.3-4.3H0v-2h9.6L5.3 1.4 6.7 0l6.7 6.7Z"/>
+            </svg>
+          </span>
+        </span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Loading overlay -->
+  <div id="loading">
+    <div class="loading-icon-wrap">
+      <div class="loading-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" viewBox="0 0 64 64">
+            <path fill="#E1E1E3" d="M5.3 32c0-14.7 12-26.7 26.7-26.7a2.7 2.7 0 0 1 0 5.4A21.3 21.3 0 1 0 53.3 32a2.7 2.7 0 0 1 5.4 0 26.7 26.7 0 0 1-53.4 0Z"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pan / zoom container that panzoom will manage -->
+  <!-- SVG is injected here by JS via fetch() so <a> links stay clickable -->
+  <div id="scene"></div>
+
+  <!-- Zoom controls -->
+  <div id="controls">
+    <button id="btn-zoom-in" class="control-button" title="Приблизить"><img src="src/control-zoom-in.svg"></button>
+    <button id="btn-zoom-out" class="control-button" title="Отдалить"><img src="src/control-zoom-out.svg"></button>
+    <button id="btn-reset" class="control-button" title="Сброс"><img src="src/control-zoom-reset.svg"></button>
+  </div>
+
+  <div class="footer-wrap">
+    <button class="footer-toggle" onclick="footerToggle()">футер</button>
+    <footer class="footer">
+      <div class="footer-layout">
+        <a class="footer-link" target="_blank" href="https://hh.ru/article/recommendation_technologies">правила применения рекомендательных технологий</a>
+        <a class="footer-link" target="_blank" href="https://setka.ru/agreement">пользовательское соглашение</a>
+        <a class="footer-link" target="_blank" href="https://hh.ru/article/personal_data">политика персональных данных</a>
+        <div class="footer-link footer-link-partners">
+          <span class="">партнеры</span>
+          <a target="_blank" href="https://setka.ru/communities/018f8673-5cea-423b-8170-6d46bdd5fdcd"><img class="partner-logo" src="src/samozvanets-logo.svg" alt="Самозванец в Сетке"></a>
+          <a target="_blank" href="https://setka.ru/communities/018c66ec-0dae-4cba-970d-66b52620d86c"><img class="partner-logo" src="src/setka-v-setke-logo.svg" alt="Сетка в Сетке"></a>
+          <a target="_blank" href="https://setka.ru/communities/018f94eb-fc2e-4386-a27e-c8076ae1a770"><img class="partner-logo" src="src/neirabotai-logo.svg" alt="Нейработай в Сетке"></a>
+        </div>
+        <a class="footer-link" target="_blank" href="https://setka.ru/rules">правила</a>
+      </div>
+    </footer>
+  </div>
+
+  <div id="cookie-banner">
+    <div class="cookie-text">
+      Пользуясь нашим сайтом, вы&nbsp;соглашаетесь c тем, что&nbsp;мы&nbsp;<a target="_blank" href="https://hh.ru/article/cookie_policy">используем cookies</a>
+    </div>
+    <button id="cookie-accept">окей</button>
+  </div>
+
+  <div class="hint drag" id="hint-drag">
+    <div class="hint-icon">
+      <img src="src/icon-drag.svg">
+    </div>
+    <div class="hint-text">
+      Зажмите левую кнопку мыши и&nbsp;двигайте ей в нужную сторону, чтобы передвигаться по карте.
+    </div>
+  </div>
+
+  <div class="hint zoom" id="hint-zoom">
+    <div class="hint-icon">
+      <img src="src/icon-zoom.svg">
+    </div>
+    <div class="hint-text">
+      Используйте колёсико мыши, чтобы увеличить или уменьшить масштаб карты.
+    </div>
+  </div>
+
+  <div class="hint touch-drag" id="hint-touch-drag">
+    <div class="hint-icon">
+      <img src="src/icon-touch.svg">
+    </div>
+    <div class="hint-text">
+      Зажмите трекпад одним пальцем, чтобы&nbsp;передвигаться по карте.
+    </div>
+  </div>
+
+  <div class="hint touch-zoom" id="hint-touch-zoom">
+    <div class="hint-icon">
+      <img src="src/icon-zoom.svg">
+    </div>
+    <div class="hint-text">
+      Используйте жест «щипка», чтобы увеличить или уменьшить масштаб карты
+    </div>
+  </div>
+
+  <script src="src/panzoom.min.js"></script>
+
+  <script>
+    (function () {
+      const scene   = document.getElementById('scene');
+      const loading = document.getElementById('loading');
+
+      let pz    = null;
+      let svgEl = null;
+
+      function getSvgDims() {
+        const vb = svgEl.viewBox && svgEl.viewBox.baseVal;
+        if (vb && vb.width) return { w: vb.width, h: vb.height };
+        return {
+          w: parseFloat(svgEl.getAttribute('width'))  || svgEl.clientWidth,
+          h: parseFloat(svgEl.getAttribute('height')) || svgEl.clientHeight,
+        };
+      }
+
+      function centerContent() {
+        if (!pz || !svgEl) return;
+        const vw = scene.clientWidth;
+        const vh = scene.clientHeight;
+        const { w: svgW, h: svgH } = getSvgDims();
+        if (!svgW || !svgH) return;
+
+        var headerH  = document.querySelector('.header').offsetHeight;
+        var availH   = vh - headerH;
+        var scale    = availH / (svgH * 0.185);
+        var tx       = (vw - svgW * scale) / 2;
+        var ty       = headerH + (availH - svgH * scale) / 2;
+
+        pz.zoomAbs(0, 0, scale);
+        pz.moveTo(tx, ty);
+      }
+
+      function initPanzoom() {
+        if (pz) { pz.dispose(); pz = null; }
+
+        pz = panzoom(svgEl, {
+          maxZoom: 40,
+          minZoom: 0.05,
+          zoomDoubleClickSpeed: 1,
+          smoothScroll: false,
+          beforeMouseDown: function (e) {
+            // Let link clicks through without starting a pan
+            if (e.target && e.target.closest && e.target.closest('a')) return true;
+            return false;
+          }
+        });
+
+        centerContent();
+        loading.classList.add('hidden');
+      }
+
+      // Fetch and inline the SVG so <a> links are in the same DOM
+      fetch('assets/map-2-links.svg')
+        .then(function (r) { return r.text(); })
+        .then(function (text) {
+          const doc = new DOMParser().parseFromString(text, 'image/svg+xml');
+          svgEl = doc.documentElement;
+          scene.appendChild(svgEl);
+          setTimeout(initPanzoom, 50);
+        })
+        .catch(function () {
+          loading.textContent = 'Failed to load SVG.';
+        });
+
+      document.getElementById('btn-zoom-in').addEventListener('click', function () {
+        if (pz) pz.smoothZoom(scene.clientWidth / 2, scene.clientHeight / 2, 1.4);
+      });
+
+      document.getElementById('btn-zoom-out').addEventListener('click', function () {
+        if (pz) pz.smoothZoom(scene.clientWidth / 2, scene.clientHeight / 2, 1 / 1.4);
+      });
+
+      document.getElementById('btn-reset').addEventListener('click', function () {
+        if (pz) centerContent();
+      });
+
+      window.addEventListener('resize', function () {
+        if (pz) centerContent();
+      });
+
+    })();
+  </script>
+
+  <script>
+    // ── Cookie banner ──────────────────────────────────────────────────
+    (function () {
+      var banner = document.getElementById('cookie-banner');
+      var acceptBtn = document.getElementById('cookie-accept');
+
+      if (document.cookie.match(/(^| )cookie_accepted=/)) {
+        banner.style.display = 'none';
+      }
+
+      acceptBtn.addEventListener('click', function () {
+        var expires = new Date(Date.now() + 30 * 864e5).toUTCString();
+        document.cookie = 'cookie_accepted=1; expires=' + expires + '; path=/';
+        banner.style.display = 'none';
+      });
+    })();
+
+    // ── Cursor hints ───────────────────────────────────────────────────
+    (function () {
+      var isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+      var hintFirst  = document.getElementById(isTouch ? 'hint-touch-drag' : 'hint-drag');
+      var hintSecond = document.getElementById(isTouch ? 'hint-touch-zoom' : 'hint-zoom');
+
+      // Remove unused pair entirely
+      document.getElementById(isTouch ? 'hint-drag' : 'hint-touch-drag').remove();
+      document.getElementById(isTouch ? 'hint-zoom' : 'hint-touch-zoom').remove();
+
+      function showHint(el) {
+        el.style.opacity = '1';
+      }
+
+      function hideHint(el) {
+        el.style.opacity = '0';
+      }
+
+      if (!isTouch) {
+        // Desktop: hint follows cursor, offset to top-right
+        var activeHint = null;
+
+        document.addEventListener('mousemove', function (e) {
+          if (!activeHint) return;
+          activeHint.style.left = (e.clientX + 16) + 'px';
+          activeHint.style.top  = (e.clientY - activeHint.offsetHeight - 16) + 'px';
+        });
+
+        activeHint = hintFirst;
+        showHint(hintFirst);
+
+        setTimeout(function () {
+          hideHint(hintFirst);
+          setTimeout(function () {
+            activeHint = hintSecond;
+            showHint(hintSecond);
+            setTimeout(function () {
+              hideHint(hintSecond);
+              activeHint = null;
+            }, 3000);
+          }, 300);
+        }, 3000);
+
+      } else {
+        // Touch: centered below header
+        var header = document.querySelector('.header');
+
+        function positionTouch(el) {
+          var top = header.offsetHeight + 12;
+          el.style.left = '50%';
+          el.style.top = top + 'px';
+          el.style.transform = 'translateX(-50%)';
+        }
+
+        positionTouch(hintFirst);
+        positionTouch(hintSecond);
+
+        showHint(hintFirst);
+
+        setTimeout(function () {
+          hideHint(hintFirst);
+          setTimeout(function () {
+            showHint(hintSecond);
+            setTimeout(function () {
+              hideHint(hintSecond);
+            }, 3000);
+          }, 300);
+        }, 3000);
+      }
+    })();
+  </script>
+
+</body>
+</html>
