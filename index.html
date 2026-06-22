@@ -26,12 +26,12 @@
       height: 100%;
       overflow: hidden;
       background: #9356FF;
-      font-family: 'Inter';
+      font-family: 'Inter', Arial, sans-serif;
       
     }
 
     button, input {
-      font-family: 'Inter';
+      font-family: 'Inter', Arial, sans-serif;
       appearance: none;
       border: none;
     }
@@ -57,6 +57,12 @@
       z-index: 100;
       bottom: 50%;
       transform: translate(0, 50%);
+    }
+
+    @media (max-width: 767px) {
+      #controls {
+        right: 16px;
+      }
     }
 
     #controls button {
@@ -163,7 +169,7 @@
         height: auto;
       }
       .header-layout {
-        padding: 10px 12px;
+        padding: 10px 16px;
       }
     }
 
@@ -178,6 +184,16 @@
     .header-logos-wrap img {
       display: block;
       margin: 0;
+      width: 100%;
+    }
+
+    @media (max-width: 767px) {
+      .setka-logo {
+        width: 137px;
+      }
+      .setka-authors-logo {
+        width: 30px;
+      }
     }
 
     .header-button {
@@ -187,7 +203,7 @@
       color: #fff;
       /* background-image: linear-gradient(0deg, #9a5cff .37%, #7d2eff 2.45%, #6f17ff 4.93%, #ae57ff 99.54%); */
       text-decoration: none;
-      padding: 0 .75rem;
+      padding: 0 16px;
       border-radius: 12px;
       height: 40px;
       display: flex;
@@ -200,6 +216,12 @@
       text-transform: lowercase;
       background: #6B00FF;
       transition: background .2s ease-in-out;
+    }
+
+    @media (max-width: 767px) {
+      .header-button {
+        height: 32px;
+      }
     }
 
     .header-button:hover {
@@ -341,14 +363,6 @@
       .footer {
         height: auto;
       } 
-      .footer-layout {
-        align-items: start;
-        height: auto;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        grid-template-rows: auto;
-        padding: 20px 17px;
-      }
 
       .footer-link {
         text-align: left;
@@ -375,6 +389,16 @@
       border-radius: 100vw;
       display: flex;
       gap: 22px;
+      z-index: 11;
+    }
+
+
+    @media (max-width: 767px) {
+      #cookie-banner {
+        left: 16px;
+        width: auto;
+        right: 16px;
+      }
     }
 
     .cookie-text {
@@ -429,6 +453,12 @@
       pointer-events: none;
       transition: opacity 0.3s;
       z-index: 200;
+    }
+
+    @media (max-width: 767px) {
+      .hint {
+        max-width: calc(100vw - 32px);
+      }
     }
 
     .hint-icon {
@@ -626,9 +656,10 @@
 
         var headerH  = document.querySelector('.header').offsetHeight;
         var availH   = vh - headerH;
-        var scale    = availH / (svgH * 0.185);
+        var isPortrait = vw < vh;
+        var scale    = isPortrait ? vw / (svgW * 0.15) : availH / (svgH * 0.185);
         var tx       = (vw - svgW * scale) / 2;
-        var ty       = headerH + (availH - svgH * scale) / 2;
+        var ty       = headerH + (availH - svgH * scale) / 2 - (isPortrait ? vh * 0.1 : 0);
 
         pz.zoomAbs(0, 0, scale);
         pz.moveTo(tx, ty);
@@ -651,6 +682,7 @@
 
         centerContent();
         loading.classList.add('hidden');
+        document.dispatchEvent(new Event('map-ready'));
       }
 
       // Fetch and inline the SVG so <a> links are in the same DOM
@@ -721,57 +753,61 @@
         el.style.opacity = '0';
       }
 
-      if (!isTouch) {
-        // Desktop: hint follows cursor, offset to top-right
-        var activeHint = null;
+      function startHints() {
+        if (!isTouch) {
+          // Desktop: hint follows cursor, offset to top-right
+          var activeHint = null;
 
-        document.addEventListener('mousemove', function (e) {
-          if (!activeHint) return;
-          activeHint.style.left = (e.clientX + 16) + 'px';
-          activeHint.style.top  = (e.clientY - activeHint.offsetHeight - 16) + 'px';
-        });
+          document.addEventListener('mousemove', function (e) {
+            if (!activeHint) return;
+            activeHint.style.left = (e.clientX + 16) + 'px';
+            activeHint.style.top  = (e.clientY - activeHint.offsetHeight - 16) + 'px';
+          });
 
-        activeHint = hintFirst;
-        showHint(hintFirst);
+          activeHint = hintFirst;
+          showHint(hintFirst);
 
-        setTimeout(function () {
+          setTimeout(function () {
+            hideHint(hintFirst);
+            setTimeout(function () {
+              activeHint = hintSecond;
+              showHint(hintSecond);
+              setTimeout(function () {
+                hideHint(hintSecond);
+                activeHint = null;
+              }, 3000);
+            }, 300);
+          }, 3000);
+
+        } else {
+          // Touch: centered below header
+          var header = document.querySelector('.header');
+
+          function positionTouch(el) {
+            var top = header.offsetHeight + 12;
+            el.style.left = '50%';
+            el.style.top = top + 'px';
+            el.style.transform = 'translateX(-50%)';
+          }
+
+          positionTouch(hintFirst);
+          positionTouch(hintSecond);
+
+          showHint(hintFirst);
+
+          setTimeout(function () {
           hideHint(hintFirst);
           setTimeout(function () {
-            activeHint = hintSecond;
             showHint(hintSecond);
             setTimeout(function () {
               hideHint(hintSecond);
-              activeHint = null;
             }, 3000);
           }, 300);
         }, 3000);
-
-      } else {
-        // Touch: centered below header
-        var header = document.querySelector('.header');
-
-        function positionTouch(el) {
-          var top = header.offsetHeight + 12;
-          el.style.left = '50%';
-          el.style.top = top + 'px';
-          el.style.transform = 'translateX(-50%)';
         }
-
-        positionTouch(hintFirst);
-        positionTouch(hintSecond);
-
-        showHint(hintFirst);
-
-        setTimeout(function () {
-          hideHint(hintFirst);
-          setTimeout(function () {
-            showHint(hintSecond);
-            setTimeout(function () {
-              hideHint(hintSecond);
-            }, 3000);
-          }, 300);
-        }, 3000);
       }
+
+      document.addEventListener('map-ready', startHints, { once: true });
     })();
   </script>
 
