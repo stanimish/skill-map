@@ -779,28 +779,57 @@
       var hintDrag = document.getElementById('hint-drag');
       var hintZoom = document.getElementById('hint-zoom');
       var activeHint = null;
+      var cursorX = 0, cursorY = 0;
+
+      function positionHint(el) {
+        el.style.left = (cursorX + 16) + 'px';
+        el.style.top  = (cursorY - el.offsetHeight - 16) + 'px';
+      }
 
       document.addEventListener('mousemove', function (e) {
+        cursorX = e.clientX;
+        cursorY = e.clientY;
         if (!activeHint) return;
-        activeHint.style.left = (e.clientX + 16) + 'px';
-        activeHint.style.top  = (e.clientY - activeHint.offsetHeight - 16) + 'px';
+        positionHint(activeHint);
       });
+
+      var timer1, timer2, timer3;
+
+      function showSecondHint() {
+        clearTimeout(timer1);
+        hintDrag.style.opacity = '0';
+        timer2 = setTimeout(function () {
+          activeHint = hintZoom;
+          positionHint(hintZoom);
+          hintZoom.style.opacity = '1';
+          timer3 = setTimeout(dismissHints, 6000);
+        }, 300);
+      }
+
+      function dismissHints() {
+        clearTimeout(timer1);
+        clearTimeout(timer2);
+        clearTimeout(timer3);
+        hintDrag.style.opacity = '0';
+        hintZoom.style.opacity = '0';
+        activeHint = null;
+        document.removeEventListener('click', onHintClick);
+      }
+
+      function onHintClick() {
+        if (activeHint === hintDrag) {
+          showSecondHint();
+        } else if (activeHint === hintZoom) {
+          dismissHints();
+        }
+      }
 
       function startHints() {
         activeHint = hintDrag;
+        positionHint(hintDrag);
         hintDrag.style.opacity = '1';
-
-        setTimeout(function () {
-          hintDrag.style.opacity = '0';
-          setTimeout(function () {
-            activeHint = hintZoom;
-            hintZoom.style.opacity = '1';
-            setTimeout(function () {
-              hintZoom.style.opacity = '0';
-              activeHint = null;
-            }, 6000);
-          }, 300);
-        }, 6000);
+        timer1 = setTimeout(showSecondHint, 6000);
+        document.addEventListener('click', onHintClick);
       }
 
       document.addEventListener('map-ready', startHints, { once: true });
