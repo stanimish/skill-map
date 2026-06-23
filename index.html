@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Карта навыков для авторов</title>
+  <meta name="description" content="Здесь собраны 8 ключевых навыков развития автора. Изучать материалы можно в любом порядке: пройти базовый уровень во всех навыках или углубиться в один из них до экспертного. Если не знаете, с чего начать, начните с блока общих знаний.">
+  <link rel="icon" href="src/setka-favicon.svg" type="image/svg+xml">
   <style>
     @font-face {
       font-family: "TTTravelsNext";
@@ -279,7 +281,16 @@
       display: none;
     }
 
-    .footer-wrap:hover .footer {
+    /* @media (hover: hover) {
+      .footer-wrap:hover .footer {
+        display: block;
+        pointer-events: auto;
+        transform: translateY(0);
+        opacity: 1;
+      }
+    } */
+
+    .footer.open {
       display: block;
       pointer-events: auto;
       transform: translateY(0);
@@ -299,6 +310,7 @@
       font-size: 14px;
       font-weight: 500;
       box-shadow: inset 0 0 0 1px #19191A;
+      cursor: pointer;
     }
 
     .footer-layout {
@@ -345,6 +357,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      padding: 2px;
      }
 
      .footer-link-partners a:hover {
@@ -526,8 +539,8 @@
 <body>
   <header class="header">
     <div class="header-layout">
-      <div href="https://setka.ru/" class="header-logos-wrap" >
-        <a class="setka-logo" href="" target="_blank" aria-label="Главная страница Сетки"><img src="src/setka-logo-white.svg" alt="setka"></a>
+      <div class="header-logos-wrap" >
+        <a class="setka-logo" href="https://setka.ru/" target="_blank" aria-label="Главная страница Сетки"><img src="src/setka-logo-white.svg" alt="setka"></a>
         <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="currentColor" viewBox="0 0 10 10">
           <path fill="#fff" d="m8.7 2.4-3 2.9 3 2.8L8 9l-3-3-2.8 3-.7-.8 2.9-2.8-3-3 .8-.7 2.9 3 2.9-3 .7.8Z"/>
         </svg>
@@ -568,7 +581,7 @@
   </div>
 
   <div class="footer-wrap">
-    <button class="footer-toggle" onclick="footerToggle()">футер</button>
+    <button class="footer-toggle">футер</button>
     <footer class="footer">
       <div class="footer-layout">
         <a class="footer-link" target="_blank" href="https://hh.ru/article/recommendation_technologies">правила применения рекомендательных технологий</a>
@@ -576,9 +589,9 @@
         <a class="footer-link" target="_blank" href="https://hh.ru/article/personal_data">политика персональных данных</a>
         <div class="footer-link footer-link-partners">
           <span class="">партнеры</span>
-          <a target="_blank" href="https://setka.ru/communities/018f8673-5cea-423b-8170-6d46bdd5fdcd"><img class="partner-logo" src="src/samozvanets-logo.svg" alt="Самозванец в Сетке"></a>
-          <a target="_blank" href="https://setka.ru/communities/018c66ec-0dae-4cba-970d-66b52620d86c"><img class="partner-logo" src="src/setka-v-setke-logo.svg" alt="Сетка в Сетке"></a>
-          <a target="_blank" href="https://setka.ru/communities/018f94eb-fc2e-4386-a27e-c8076ae1a770"><img class="partner-logo" src="src/neirabotai-logo.svg" alt="Нейработай в Сетке"></a>
+          <a target="_blank" href="https://setka.ru/communities/018f8673-5cea-423b-8170-6d46bdd5fdcd"><img class="partner-logo" src="src/samozvanets-logo.webp" alt="Самозванец в Сетке"></a>
+          <a target="_blank" href="https://setka.ru/communities/018c66ec-0dae-4cba-970d-66b52620d86c"><img class="partner-logo" src="src/setka-v-setke-logo.webp" alt="Сетка в Сетке"></a>
+          <a target="_blank" href="https://setka.ru/communities/018f94eb-fc2e-4386-a27e-c8076ae1a770"><img class="partner-logo" src="src/neirabotai-logo.webp" alt="Нейработай в Сетке"></a>
         </div>
         <a class="footer-link" target="_blank" href="https://setka.ru/rules">правила</a>
       </div>
@@ -610,23 +623,6 @@
     </div>
   </div>
 
-  <div class="hint touch-drag" id="hint-touch-drag">
-    <div class="hint-icon">
-      <img src="src/icon-touch.svg">
-    </div>
-    <div class="hint-text">
-      Зажмите трекпад одним пальцем, чтобы&nbsp;передвигаться по карте.
-    </div>
-  </div>
-
-  <div class="hint touch-zoom" id="hint-touch-zoom">
-    <div class="hint-icon">
-      <img src="src/icon-zoom.svg">
-    </div>
-    <div class="hint-text">
-      Используйте жест «щипка», чтобы увеличить или уменьшить масштаб карты
-    </div>
-  </div>
 
   <script src="src/panzoom.min.js"></script>
 
@@ -738,6 +734,23 @@
   </script>
 
   <script>
+    // ── Footer toggle ─────────────────────────────────────────────────
+    (function () {
+      var footer = document.querySelector('.footer');
+      var toggle = document.querySelector('.footer-toggle');
+
+      toggle.addEventListener('click', function (e) {
+        e.stopPropagation();
+        footer.classList.toggle('open');
+      });
+
+      document.addEventListener('click', function (e) {
+        if (!footer.contains(e.target) && !toggle.contains(e.target)) {
+          footer.classList.remove('open');
+        }
+      });
+    })();
+
     // ── Cookie banner ──────────────────────────────────────────────────
     (function () {
       var banner = document.getElementById('cookie-banner');
@@ -754,77 +767,40 @@
       });
     })();
 
-    // ── Cursor hints ───────────────────────────────────────────────────
+    // ── Cursor hints (desktop only) ──────────────────────────────────
     (function () {
       var isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-
-      var hintFirst  = document.getElementById(isTouch ? 'hint-touch-drag' : 'hint-drag');
-      var hintSecond = document.getElementById(isTouch ? 'hint-touch-zoom' : 'hint-zoom');
-
-      // Remove unused pair entirely
-      document.getElementById(isTouch ? 'hint-drag' : 'hint-touch-drag').remove();
-      document.getElementById(isTouch ? 'hint-zoom' : 'hint-touch-zoom').remove();
-
-      function showHint(el) {
-        el.style.opacity = '1';
+      if (isTouch) {
+        document.getElementById('hint-drag').remove();
+        document.getElementById('hint-zoom').remove();
+        return;
       }
 
-      function hideHint(el) {
-        el.style.opacity = '0';
-      }
+      var hintDrag = document.getElementById('hint-drag');
+      var hintZoom = document.getElementById('hint-zoom');
+      var activeHint = null;
+
+      document.addEventListener('mousemove', function (e) {
+        if (!activeHint) return;
+        activeHint.style.left = (e.clientX + 16) + 'px';
+        activeHint.style.top  = (e.clientY - activeHint.offsetHeight - 16) + 'px';
+      });
 
       function startHints() {
-        if (!isTouch) {
-          // Desktop: hint follows cursor, offset to top-right
-          var activeHint = null;
+        activeHint = hintDrag;
+        hintDrag.style.opacity = '1';
 
-          document.addEventListener('mousemove', function (e) {
-            if (!activeHint) return;
-            activeHint.style.left = (e.clientX + 16) + 'px';
-            activeHint.style.top  = (e.clientY - activeHint.offsetHeight - 16) + 'px';
-          });
-
-          activeHint = hintFirst;
-          showHint(hintFirst);
-
+        setTimeout(function () {
+          hintDrag.style.opacity = '0';
           setTimeout(function () {
-            hideHint(hintFirst);
+            activeHint = hintZoom;
+            hintZoom.style.opacity = '1';
             setTimeout(function () {
-              activeHint = hintSecond;
-              showHint(hintSecond);
-              setTimeout(function () {
-                hideHint(hintSecond);
-                activeHint = null;
-              }, 3000);
-            }, 300);
-          }, 3000);
-
-        } else {
-          // Touch: centered below header
-          var header = document.querySelector('.header');
-
-          function positionTouch(el) {
-            var top = header.offsetHeight + 12;
-            el.style.left = '50%';
-            el.style.top = top + 'px';
-            el.style.transform = 'translateX(-50%)';
-          }
-
-          positionTouch(hintFirst);
-          positionTouch(hintSecond);
-
-          showHint(hintFirst);
-
-          setTimeout(function () {
-          hideHint(hintFirst);
-          setTimeout(function () {
-            showHint(hintSecond);
-            setTimeout(function () {
-              hideHint(hintSecond);
-            }, 3000);
+              hintZoom.style.opacity = '0';
+              activeHint = null;
+            }, 6000);
           }, 300);
-        }, 3000);
-        }
+        }, 6000);
       }
 
       document.addEventListener('map-ready', startHints, { once: true });
