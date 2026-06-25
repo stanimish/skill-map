@@ -175,8 +175,8 @@
           svgEl = doc.documentElement;
           scene.appendChild(svgEl);
 
-          // SVG <a> elements don't navigate reliably on mobile Safari,
-          // so handle clicks explicitly
+          // Handle SVG link clicks explicitly (fixes mobile Safari)
+          // and prevent native SVG <a> from also opening a tab
           var dragThreshold = 5;
           var startX, startY;
           svgEl.addEventListener('pointerdown', function (e) {
@@ -192,6 +192,9 @@
               var href = link.getAttribute('href') || link.getAttributeNS('http://www.w3.org/1999/xlink', 'href');
               if (href) window.open(href, '_blank');
             }
+          });
+          svgEl.addEventListener('click', function (e) {
+            if (e.target.closest('a')) e.preventDefault();
           });
 
           setTimeout(initPanzoom, 50);
