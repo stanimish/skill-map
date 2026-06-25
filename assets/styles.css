@@ -322,6 +322,7 @@ button, input {
   flex: 1 1 20%;
   text-decoration: none;
   font-size: 12px;
+  line-height: 1.5;
   font-weight: 400;
   letter-spacing: .01em;
   transition: .2s all ease-in-out;
