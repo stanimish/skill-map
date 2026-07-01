@@ -327,7 +327,6 @@ button, input {
   letter-spacing: .01em;
   transition: .2s all ease-in-out;
   text-wrap: balance;
-  letter-spacing: .01em;
 }
 
  .footer-link:not(.footer-link-partners):hover {
